@@ -11,17 +11,26 @@ import (
 )
 
 type UserController struct {
-	createUserUseCase  use_cases.CreateUserUseCase
-	getUserByIDUseCase use_cases.GetUserByIDUseCase
+	createUserUseCase     use_cases.CreateUserUseCase
+	getUsersUseCase       use_cases.GetUsesUseCase
+	getUserByIDUseCase    use_cases.GetUserByIDUseCase
+	updateUserByIDUseCase use_cases.UpdateUserByIDUseCase
+	deleteUserByIDUseCase use_cases.DeleteUserByIDUseCase
 }
 
 func NewUserController(
 	createUserUseCase use_cases.CreateUserUseCase,
+	getUsesUseCase use_cases.GetUsesUseCase,
 	getUserByIDUseCase use_cases.GetUserByIDUseCase,
+	updateUserByIDUseCase use_cases.UpdateUserByIDUseCase,
+	deleteUserByIDUseCase use_cases.DeleteUserByIDUseCase,
 ) *UserController {
 	return &UserController{
-		createUserUseCase:  createUserUseCase,
-		getUserByIDUseCase: getUserByIDUseCase,
+		createUserUseCase:     createUserUseCase,
+		getUsersUseCase:       getUsesUseCase,
+		getUserByIDUseCase:    getUserByIDUseCase,
+		updateUserByIDUseCase: updateUserByIDUseCase,
+		deleteUserByIDUseCase: deleteUserByIDUseCase,
 	}
 }
 
@@ -42,9 +51,9 @@ func (ctl *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctl *UserController) GetUserByID(w http.ResponseWriter, r *http.Request) {
-	userId := chi.URLParam(r, "userId")
+	userID := chi.URLParam(r, "id")
 
-	userDto, err := ctl.getUserByIDUseCase.Execute(userId)
+	userDto, err := ctl.getUserByIDUseCase.Execute(userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -52,5 +61,57 @@ func (ctl *UserController) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+
 	json.NewEncoder(w).Encode(userDto)
+}
+
+func (ctl *UserController) GetUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := ctl.getUsersUseCase.Execute()
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(users)
+}
+
+func (ctl *UserController) UpdateUserByID(w http.ResponseWriter, r *http.Request) {
+	userID := chi.URLParam(r, "id")
+
+	var userDto user.UpdateUserDTO
+
+	err := json.NewDecoder(r.Body).Decode(&userDto)
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	userDto.ID = userID
+
+	err = ctl.updateUserByIDUseCase.Execute(userDto)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (ctl *UserController) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	userID := chi.URLParam(r, "id")
+
+	err := ctl.deleteUserByIDUseCase.Execute(userID)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }

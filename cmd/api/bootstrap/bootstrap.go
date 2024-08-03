@@ -22,7 +22,7 @@ import (
 func Run() {
 	server := http.Server{
 		Addr:    ":8080",
-		Handler: service(),
+		Handler: ServerService(),
 	}
 
 	log.Printf("Starting server on: http://localhost:%s\n", server.Addr)
@@ -58,14 +58,23 @@ func Run() {
 	<-serverCtx.Done()
 }
 
-func service() http.Handler {
+func ServerService() http.Handler {
 
 	userRepository := repositories.NewInMemoryUserRepository()
 
 	createUserUseCase := use_cases.NewCreateUserUseCase(userRepository)
+	getUserByUseCase := use_cases.NewGetUsesUseCase(userRepository)
 	getUserByIDUseCase := use_cases.NewGetUserByIDUseCase(userRepository)
+	updateUserByIDUseCase := use_cases.NewUpdateUserByIDUseCase(userRepository)
+	deleteUserByIDUseCase := use_cases.NewDeleteUserByIDUseCase(userRepository)
 
-	userController := controllers.NewUserController(*createUserUseCase, *getUserByIDUseCase)
+	userController := controllers.NewUserController(
+		*createUserUseCase,
+		*getUserByUseCase,
+		*getUserByIDUseCase,
+		*updateUserByIDUseCase,
+		*deleteUserByIDUseCase,
+	)
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)

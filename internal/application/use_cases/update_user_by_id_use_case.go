@@ -1,44 +1,45 @@
 package use_cases
 
 import (
-	"errors"
 	"fmt"
-
 	"github.com/javiertelioz/template-clean-architecture-go/internal/application/dto/user"
 	userentity "github.com/javiertelioz/template-clean-architecture-go/internal/domain/entities/user"
 	"github.com/javiertelioz/template-clean-architecture-go/internal/domain/repositories"
 )
 
-type CreateUserUseCase struct {
+type UpdateUserByIDUseCase struct {
 	userRepository repositories.UserRepository
 }
 
-func NewCreateUserUseCase(
-	userRepository repositories.UserRepository,
-) *CreateUserUseCase {
-	return &CreateUserUseCase{
+func NewUpdateUserByIDUseCase(userRepository repositories.UserRepository) *UpdateUserByIDUseCase {
+	return &UpdateUserByIDUseCase{
 		userRepository: userRepository,
 	}
 }
 
-func (uc *CreateUserUseCase) Execute(user user.CreateUserDTO) error {
-	exists, _ := uc.userRepository.GetByEmail(user.Email)
-
-	if exists != nil {
-		return errors.New("email already exists")
+func (uc *UpdateUserByIDUseCase) Execute(user user.UpdateUserDTO) error {
+	_, err := uc.userRepository.GetByID(user.ID)
+	if err != nil {
+		return err
 	}
 
-	domainUser := userentity.NewUser(
+	domainUser := userentity.NewUser[string](
+		userentity.WithID(user.ID),
 		userentity.WithName(user.Name),
 		userentity.WithEmail(user.Email),
+		userentity.WithDob[string](user.Dob.Time),
 	)
 
 	validationErrors := domainUser.Validate()
-
 	if !validationErrors.IsEmpty() {
-		fmt.Printf("Errores de validación: %+v \n", validationErrors)
+		fmt.Printf("Validation errors: %+v\n", validationErrors)
 		return validationErrors
 	}
 
-	return uc.userRepository.Create(domainUser)
+	err = uc.userRepository.Update(domainUser)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

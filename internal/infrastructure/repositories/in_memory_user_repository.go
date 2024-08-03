@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"errors"
+	"sync"
+
 	"github.com/google/uuid"
 
 	"github.com/javiertelioz/template-clean-architecture-go/internal/domain/entities/user"
@@ -9,42 +11,97 @@ import (
 )
 
 type InMemoryUserRepository struct {
-	users map[string]user.User[string]
+	mu    sync.RWMutex
+	users map[string]*user.User[string]
 }
 
 func NewInMemoryUserRepository() repositories.UserRepository {
-	return &InMemoryUserRepository{
-		users: make(map[string]user.User[string]),
+	repo := &InMemoryUserRepository{
+		users: make(map[string]*user.User[string]),
 	}
+
+	setup(repo)
+
+	return repo
 }
 
-func (repo *InMemoryUserRepository) Create(user *user.User[string]) error {
-	if _, exists := repo.users[user.GetID()]; exists {
+func (r *InMemoryUserRepository) Create(u *user.User[string]) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, exists := r.users[u.GetID()]; exists {
 		return errors.New("user already exists")
 	}
 
 	id := uuid.New().String()
+	newUser := user.NewUser[string](
+		user.WithID(id),
+		user.WithName(u.GetName()),
+		user.WithEmail(u.GetEmail()),
+	)
 
-	repo.users[id] = *user
+	r.users[id] = newUser
+
 	return nil
 }
 
-func (repo *InMemoryUserRepository) GetByID(id string) (*user.User[string], error) {
-	existsUser, exists := repo.users[id]
+func (r *InMemoryUserRepository) GetUsers() ([]*user.User[string], error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 
-	if !exists {
-		return &user.User[string]{}, errors.New("user does not exist")
+	var users []*user.User[string]
+	for _, u := range r.users {
+		users = append(users, u)
 	}
 
-	return &existsUser, nil
+	return users, nil
 }
 
-func (repo *InMemoryUserRepository) GetByEmail(email string) (*user.User[string], error) {
-	for _, repositoryUser := range repo.users {
-		if repositoryUser.GetEmail() == email {
-			return &repositoryUser, nil
+func (r *InMemoryUserRepository) GetByID(id string) (*user.User[string], error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	u, exists := r.users[id]
+	if !exists {
+		return nil, errors.New("user not found")
+	}
+
+	return u, nil
+}
+
+func (r *InMemoryUserRepository) GetByEmail(email string) (*user.User[string], error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for _, u := range r.users {
+		if u.GetEmail() == email {
+			return u, nil
 		}
 	}
 
-	return &user.User[string]{}, nil
+	return nil, errors.New("user not found")
+}
+
+func (r *InMemoryUserRepository) Update(u *user.User[string]) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, exists := r.users[u.GetID()]; !exists {
+		return errors.New("user not found")
+	}
+
+	r.users[u.GetID()] = u
+	return nil
+}
+
+func (r *InMemoryUserRepository) Delete(id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, exists := r.users[id]; !exists {
+		return errors.New("user not found")
+	}
+
+	delete(r.users, id)
+	return nil
 }

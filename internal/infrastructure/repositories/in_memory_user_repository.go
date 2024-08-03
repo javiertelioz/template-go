@@ -26,6 +26,7 @@ func (repo *InMemoryUserRepository) Create(user *user.User[string]) error {
 	id := uuid.New().String()
 
 	repo.users[id] = *user
+
 	return nil
 }
 
@@ -33,18 +34,17 @@ func (repo *InMemoryUserRepository) GetByID(id string) (*user.User[string], erro
 	existsUser, exists := repo.users[id]
 
 	if !exists {
-		return &user.User[string]{}, errors.New("user does not exist")
+		return &user.User[string]{}, nil
 	}
 
 	return &existsUser, nil
 }
 
 func (repo *InMemoryUserRepository) GetByEmail(email string) (*user.User[string], error) {
-	for _, repositoryUser := range repo.users {
-		if repositoryUser.GetEmail() == email {
-			return &repositoryUser, nil
-		}
+	existsUser, exists := repo.users[email]
+	if !exists {
+		return &user.User[string]{}, nil
 	}
 
-	return &user.User[string]{}, nil
+	return &existsUser, nil
 }

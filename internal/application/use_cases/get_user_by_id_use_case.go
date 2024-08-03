@@ -6,17 +6,17 @@ import (
 )
 
 type GetUserByIDUseCase struct {
-	UserRepository repositories.UserRepository
+	userRepository repositories.UserRepository
 }
 
 func NewGetUserByIDUseCase(userRepository repositories.UserRepository) *GetUserByIDUseCase {
 	return &GetUserByIDUseCase{
-		UserRepository: userRepository,
+		userRepository: userRepository,
 	}
 }
 
 func (uc *GetUserByIDUseCase) Execute(id string) (user.GetUserDTO, error) {
-	domainUser, err := uc.UserRepository.GetByID(id)
+	domainUser, err := uc.userRepository.GetByID(id)
 
 	if err != nil {
 		return user.GetUserDTO{}, err

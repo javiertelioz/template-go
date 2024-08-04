@@ -7,6 +7,10 @@ import (
 	"github.com/javiertelioz/template-clean-architecture-go/internal/domain/entities"
 )
 
+const emailRegex = `^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$`
+
+var compiledEmailRegex = regexp.MustCompile(emailRegex)
+
 func ValidateName(name string) *entities.DomainError {
 	if strings.TrimSpace(name) == "" {
 		return entities.NewDomainError(
@@ -21,9 +25,7 @@ func ValidateName(name string) *entities.DomainError {
 }
 
 func ValidateEmail(email string) *entities.DomainError {
-	re := regexp.MustCompile(`^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$`)
-
-	if !re.MatchString(email) {
+	if !compiledEmailRegex.MatchString(email) {
 		return entities.NewDomainError(
 			"Email",
 			"invalid format",

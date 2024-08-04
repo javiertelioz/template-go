@@ -23,7 +23,7 @@ func (suite *UserTestSuite) givenValidUserOptions() []user.UserOption[string] {
 		user.WithID[string]("123"),
 		user.WithName[string]("John Doe"),
 		user.WithEmail[string]("john.doe@example.com"),
-		user.WithDob[string](time.Now().AddDate(-30, 0, 0)),
+		user.WithDob[string](time.Now().UTC().AddDate(-30, 0, 0)),
 	}
 }
 

@@ -2,6 +2,7 @@ package entities
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 
@@ -22,6 +23,7 @@ func (suite *UserTestSuite) givenValidUserOptions() []user.UserOption[string] {
 		user.WithID[string]("123"),
 		user.WithName[string]("John Doe"),
 		user.WithEmail[string]("john.doe@example.com"),
+		user.WithDob[string](time.Now().AddDate(-30, 0, 0)),
 	}
 }
 
@@ -48,13 +50,17 @@ func (suite *UserTestSuite) thenExpectNoValidationErrors(errs *entities.Validati
 }
 
 func (suite *UserTestSuite) thenExpectValidationErrors(errs *entities.ValidationErrors) {
+	suite.False(errs.IsEmpty())
 	suite.NotEmpty(errs.Errors)
+	suite.Equal(len(errs.Errors), 2)
+	suite.Contains(errs.Error(), "Name cannot be empty, Email format is invalid")
 }
 
-func (suite *UserTestSuite) thenExpectUserFieldsToMatch(u *user.User[string], id, name, email string) {
+func (suite *UserTestSuite) thenExpectUserFieldsToMatch(u *user.User[string], id, name, email, dob string) {
 	suite.Equal(id, u.GetID())
 	suite.Equal(name, u.GetName())
 	suite.Equal(email, u.GetEmail())
+	suite.Contains(u.GetDob().String(), dob)
 }
 
 // Test methods
@@ -66,7 +72,7 @@ func (suite *UserTestSuite) TestCreateValidUser() {
 	u := suite.whenCreatingUser(opts)
 
 	// Then
-	suite.thenExpectUserFieldsToMatch(u, "123", "John Doe", "john.doe@example.com")
+	suite.thenExpectUserFieldsToMatch(u, "123", "John Doe", "john.doe@example.com", "1994-08-03")
 }
 
 func (suite *UserTestSuite) TestValidateValidUser() {

@@ -22,12 +22,6 @@ func NewCreateUserUseCase(
 }
 
 func (uc *CreateUserUseCase) Execute(user user.CreateUserDTO) error {
-	exists, _ := uc.userRepository.GetByEmail(user.Email)
-
-	if exists != nil {
-		return errors.New("email already exists")
-	}
-
 	domainUser := userentity.NewUser(
 		userentity.WithName(user.Name),
 		userentity.WithEmail(user.Email),
@@ -38,6 +32,16 @@ func (uc *CreateUserUseCase) Execute(user user.CreateUserDTO) error {
 	if !validationErrors.IsEmpty() {
 		fmt.Printf("Errores de validación: %+v \n", validationErrors)
 		return validationErrors
+	}
+
+	exists, err := uc.userRepository.GetByEmail(user.Email)
+
+	if err != nil {
+		return err
+	}
+
+	if exists.GetID() != "" {
+		return errors.New("email already exists")
 	}
 
 	return uc.userRepository.Create(domainUser)

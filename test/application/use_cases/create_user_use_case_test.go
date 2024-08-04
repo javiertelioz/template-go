@@ -2,9 +2,10 @@ package use_cases
 
 import (
 	"errors"
+	"testing"
+
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
 
 	"github.com/javiertelioz/template-clean-architecture-go/internal/application/dto/user"
 	"github.com/javiertelioz/template-clean-architecture-go/internal/application/use_cases"
@@ -110,6 +111,7 @@ func (suite *CreateUserUseCaseTestSuite) TestCreateUserUseCaseWithValidUserWhenC
 	// When
 	suite.whenCreateUserUseCaseIsCall(dto)
 
+	// Then
 	suite.Error(suite.err)
 	suite.Contains(suite.err.Error(), "provider error")
 	suite.userRepository.AssertCalled(suite.T(), "GetByEmail", dto.Email)

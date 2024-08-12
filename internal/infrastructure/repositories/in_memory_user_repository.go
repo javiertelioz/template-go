@@ -79,7 +79,7 @@ func (r *InMemoryUserRepository) GetByEmail(email string) (*user.User[string], e
 		}
 	}
 
-	return nil, errors.New("user not found")
+	return &user.User[string]{}, errors.New("user not found")
 }
 
 func (r *InMemoryUserRepository) Update(u *user.User[string]) error {

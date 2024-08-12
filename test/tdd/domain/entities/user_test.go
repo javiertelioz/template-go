@@ -19,11 +19,12 @@ func TestUserTestSuite(t *testing.T) {
 }
 
 func (suite *UserTestSuite) givenValidUserOptions() []user.UserOption[string] {
+	dob, _ := time.Parse("2006-01-02", "1994-08-10")
 	return []user.UserOption[string]{
 		user.WithID[string]("123"),
 		user.WithName[string]("John Doe"),
 		user.WithEmail[string]("john.doe@example.com"),
-		user.WithDob[string](time.Now().AddDate(-30, 0, 0)),
+		user.WithDob[string](dob),
 	}
 }
 
@@ -72,7 +73,7 @@ func (suite *UserTestSuite) TestCreateValidUser() {
 	u := suite.whenCreatingUser(opts)
 
 	// Then
-	suite.thenExpectUserFieldsToMatch(u, "123", "John Doe", "john.doe@example.com", "1994-08-03")
+	suite.thenExpectUserFieldsToMatch(u, "123", "John Doe", "john.doe@example.com", "1994-08-10")
 }
 
 func (suite *UserTestSuite) TestValidateValidUser() {

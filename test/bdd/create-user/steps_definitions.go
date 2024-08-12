@@ -19,22 +19,22 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	featureContext.InitializeScenario(ctx)
 }
 
-func (ctx *UserFeatureContext) iCreateAUserWithNameAndEmail(name, email string) error {
-
-	ctx.userRepository.On("GetByEmail", email).Return(userentity.NewUser[string](), nil)
-	ctx.userRepository.On("Create", mock.Anything).Return(nil)
-
-	userDto := user.CreateUserDTO{
-		Name:  name,
-		Email: email,
+func (ctx *UserFeatureContext) iCreateAUserWithPayload(payload *godog.DocString) error {
+	var userDto user.CreateUserDTO
+	err := json.Unmarshal([]byte(payload.Content), &userDto)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal payload: %v", err)
 	}
 
-	body, _ := json.Marshal(userDto)
-	req, _ := http.NewRequest("POST", "/api/v1/users", bytes.NewBuffer(body))
+	// Configurar mocks en función del contenido del DTO
+	ctx.setupMocksForUserCreation(userDto)
+
+	// Ejecutar la solicitud para crear el usuario
+	req, _ := http.NewRequest("POST", "/", bytes.NewBuffer([]byte(payload.Content)))
 	req.Header.Set("Content-Type", "application/json")
 
 	ctx.responseRecorder = httptest.NewRecorder()
-	ctx.controller.CreateUser(ctx.responseRecorder, req)
+	ctx.router.ServeHTTP(ctx.responseRecorder, req)
 
 	return nil
 }
@@ -54,4 +54,14 @@ func (ctx *UserFeatureContext) theResponseShouldBe(expectedResponse string) erro
 	}
 
 	return nil
+}
+
+// Helper functions
+func (ctx *UserFeatureContext) setupMocksForUserCreation(userDto user.CreateUserDTO) {
+	if userDto.Name == "" || userDto.Email == "john.doeexample.com" {
+		ctx.userRepository.On("GetByEmail", userDto.Email).Return(nil, nil)
+	} else {
+		ctx.userRepository.On("GetByEmail", userDto.Email).Return(&userentity.User[string]{}, nil)
+		ctx.userRepository.On("Create", mock.Anything).Return(nil)
+	}
 }

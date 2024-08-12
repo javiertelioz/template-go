@@ -30,7 +30,7 @@ func (uc *CreateUserUseCase) Execute(user user.CreateUserDTO) error {
 	validationErrors := domainUser.Validate()
 
 	if !validationErrors.IsEmpty() {
-		fmt.Printf("Errores de validación: %+v \n", validationErrors)
+		fmt.Printf("Errores de validación: %+v", validationErrors)
 		return validationErrors
 	}
 

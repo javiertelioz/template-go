@@ -1,8 +1,9 @@
 package repositories
 
 import (
-	"github.com/javiertelioz/template-clean-architecture-go/internal/domain/entities/user"
 	"time"
+
+	"github.com/javiertelioz/template-clean-architecture-go/internal/domain/entities/user"
 )
 
 func setup(repo *InMemoryUserRepository) {
@@ -11,6 +12,7 @@ func setup(repo *InMemoryUserRepository) {
 		user.WithName("Joe"),
 		user.WithEmail("joe@example.com"),
 	)
+
 	user2 := user.NewUser[string](
 		user.WithID("a0ff5e6e-908c-4534-b83f-cd85a66bda0a"),
 		user.WithName("Jane"),

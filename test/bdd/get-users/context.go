@@ -1,4 +1,4 @@
-package create_user
+package get_users
 
 import (
 	"net/http/httptest"
@@ -22,18 +22,14 @@ type UserFeatureContext struct {
 func NewUserFeatureContext() *UserFeatureContext {
 	userRepository := new(repository.MockUserRepository)
 
-	createUserUseCase := use_cases.NewCreateUserUseCase(userRepository)
 	getUsersUseCase := use_cases.NewGetUsesUseCase(userRepository)
-	getUserByIDUseCase := use_cases.NewGetUserByIDUseCase(userRepository)
-	updateUserByIDUseCase := use_cases.NewUpdateUserByIDUseCase(userRepository)
-	deleteUserByIDUseCase := use_cases.NewDeleteUserByIDUseCase(userRepository)
 
 	controller := controllers.NewUserController(
-		*createUserUseCase,
+		use_cases.CreateUserUseCase{},
 		*getUsersUseCase,
-		*getUserByIDUseCase,
-		*updateUserByIDUseCase,
-		*deleteUserByIDUseCase,
+		use_cases.GetUserByIDUseCase{},
+		use_cases.UpdateUserByIDUseCase{},
+		use_cases.DeleteUserByIDUseCase{},
 	)
 
 	router := routes.UserRoutes(controller)
@@ -46,7 +42,7 @@ func NewUserFeatureContext() *UserFeatureContext {
 }
 
 func (ctx *UserFeatureContext) InitializeScenario(s *godog.ScenarioContext) {
-	s.Step(`^I create a user with payload:$`, ctx.iCreateAUserWithPayload)
+	s.Step(`^I request the list of users$`, ctx.iRequestTheListOfUsers)
 	s.Step(`^I should get status code (\d+)$`, ctx.iShouldGetStatusCode)
-	s.Step(`^the response should be "([^"]*)"$`, ctx.theResponseShouldBe)
+	s.Step(`^the response should be:$`, ctx.theResponseShouldBe)
 }

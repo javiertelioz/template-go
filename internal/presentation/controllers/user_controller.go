@@ -55,7 +55,7 @@ func (ctl *UserController) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	userDto, err := ctl.getUserByIDUseCase.Execute(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -94,7 +94,7 @@ func (ctl *UserController) UpdateUserByID(w http.ResponseWriter, r *http.Request
 
 	err = ctl.updateUserByIDUseCase.Execute(userDto)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -108,7 +108,7 @@ func (ctl *UserController) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	err := ctl.deleteUserByIDUseCase.Execute(userID)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 

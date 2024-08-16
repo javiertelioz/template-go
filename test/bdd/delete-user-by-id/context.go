@@ -1,4 +1,4 @@
-package create_user
+package delete_user_by_id
 
 import (
 	"net/http/httptest"
@@ -22,17 +22,13 @@ type UserFeatureContext struct {
 func NewUserFeatureContext() *UserFeatureContext {
 	userRepository := new(repository.MockUserRepository)
 
-	createUserUseCase := use_cases.NewCreateUserUseCase(userRepository)
-	getUsersUseCase := use_cases.NewGetUsesUseCase(userRepository)
-	getUserByIDUseCase := use_cases.NewGetUserByIDUseCase(userRepository)
-	updateUserByIDUseCase := use_cases.NewUpdateUserByIDUseCase(userRepository)
 	deleteUserByIDUseCase := use_cases.NewDeleteUserByIDUseCase(userRepository)
 
 	controller := controllers.NewUserController(
-		*createUserUseCase,
-		*getUsersUseCase,
-		*getUserByIDUseCase,
-		*updateUserByIDUseCase,
+		use_cases.CreateUserUseCase{},
+		use_cases.GetUsesUseCase{},
+		use_cases.GetUserByIDUseCase{},
+		use_cases.UpdateUserByIDUseCase{},
 		*deleteUserByIDUseCase,
 	)
 
@@ -46,7 +42,6 @@ func NewUserFeatureContext() *UserFeatureContext {
 }
 
 func (ctx *UserFeatureContext) InitializeScenario(s *godog.ScenarioContext) {
-	s.Step(`^I create a user with payload:$`, ctx.iCreateAUserWithPayload)
+	s.Step(`^I delete the user with ID "([^"]*)"$`, ctx.iDeleteTheUserWithID)
 	s.Step(`^I should get status code (\d+)$`, ctx.iShouldGetStatusCode)
-	s.Step(`^the response should be "([^"]*)"$`, ctx.theResponseShouldBe)
 }

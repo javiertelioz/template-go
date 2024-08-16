@@ -4,30 +4,28 @@ import (
 	"net/http/httptest"
 
 	"github.com/cucumber/godog"
-
+	"github.com/go-chi/chi/v5"
 	"github.com/javiertelioz/template-clean-architecture-go/internal/application/use_cases"
 	"github.com/javiertelioz/template-clean-architecture-go/internal/presentation/controllers"
+	"github.com/javiertelioz/template-clean-architecture-go/internal/presentation/routes"
 	"github.com/javiertelioz/template-clean-architecture-go/test/mocks/repository"
 )
 
 type UserFeatureContext struct {
-	controller            *controllers.UserController
-	responseRecorder      *httptest.ResponseRecorder
-	userRepository        *repository.MockUserRepository
-	createUserUseCase     use_cases.CreateUserUseCase
-	getUsersUseCase       use_cases.GetUsesUseCase
-	getUserByIDUseCase    use_cases.GetUserByIDUseCase
-	updateUserByIDUseCase use_cases.UpdateUserByIDUseCase
-	deleteUserByIDUseCase use_cases.DeleteUserByIDUseCase
+	router           *chi.Mux
+	responseRecorder *httptest.ResponseRecorder
+	userRepository   *repository.MockUserRepository
 }
 
 func NewUserFeatureContext() *UserFeatureContext {
 	userRepository := new(repository.MockUserRepository)
+
 	createUserUseCase := use_cases.NewCreateUserUseCase(userRepository)
 	getUsersUseCase := use_cases.NewGetUsesUseCase(userRepository)
 	getUserByIDUseCase := use_cases.NewGetUserByIDUseCase(userRepository)
 	updateUserByIDUseCase := use_cases.NewUpdateUserByIDUseCase(userRepository)
 	deleteUserByIDUseCase := use_cases.NewDeleteUserByIDUseCase(userRepository)
+
 	controller := controllers.NewUserController(
 		*createUserUseCase,
 		*getUsersUseCase,
@@ -36,22 +34,17 @@ func NewUserFeatureContext() *UserFeatureContext {
 		*deleteUserByIDUseCase,
 	)
 
+	router := routes.UserRoutes(controller)
+
 	return &UserFeatureContext{
-		controller:            controller,
-		responseRecorder:      httptest.NewRecorder(),
-		userRepository:        userRepository,
-		createUserUseCase:     *createUserUseCase,
-		getUsersUseCase:       *getUsersUseCase,
-		getUserByIDUseCase:    *getUserByIDUseCase,
-		updateUserByIDUseCase: *updateUserByIDUseCase,
-		deleteUserByIDUseCase: *deleteUserByIDUseCase,
+		router:           router.(*chi.Mux),
+		responseRecorder: httptest.NewRecorder(),
+		userRepository:   userRepository,
 	}
 }
 
 func (ctx *UserFeatureContext) InitializeScenario(s *godog.ScenarioContext) {
-	s.Step(`^A repository with user not found with "([^"]*)"$`, ctx.aRepositoryWithUserNotFoundWithUserID)
-	s.Step(`^A repository with user found with "([^"]*)"$`, ctx.aRepositoryWithUserNotFound)
-	s.Step(`^I get a user by ID "([^"]*)"$`, ctx.iGetAUserByID)
+	s.Step(`^I request the user with ID "([^"]*)"$`, ctx.iRequestTheUserWithID)
 	s.Step(`^I should get status code (\d+)$`, ctx.iShouldGetStatusCode)
-	s.Step(`^the response should be "([^"]*)"$`, ctx.theResponseShouldBe)
+	s.Step(`^the response should be:$`, ctx.theResponseShouldBe)
 }

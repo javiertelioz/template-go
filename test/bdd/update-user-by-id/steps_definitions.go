@@ -1,4 +1,4 @@
-package create_user
+package update_user_by_id
 
 import (
 	"bytes"
@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 
 	"github.com/cucumber/godog"
-	"github.com/stretchr/testify/mock"
-
 	"github.com/javiertelioz/template-clean-architecture-go/internal/application/dto/user"
 	userentity "github.com/javiertelioz/template-clean-architecture-go/internal/domain/entities/user"
 )
@@ -19,16 +18,19 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	featureContext.InitializeScenario(ctx)
 }
 
-func (ctx *UserFeatureContext) iCreateAUserWithPayload(payload *godog.DocString) error {
-	var userDto user.CreateUserDTO
+func (ctx *UserFeatureContext) iUpdateTheUserWithID(userID string, payload *godog.DocString) error {
+	var userDto user.UpdateUserDTO
+
 	err := json.Unmarshal([]byte(payload.Content), &userDto)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal payload: %v", err)
 	}
 
-	ctx.setupMocksForUserCreation(userDto)
+	userDto.ID = userID
 
-	req, _ := http.NewRequest("POST", "/", bytes.NewBuffer([]byte(payload.Content)))
+	ctx.setupMocksForUserUpdate(userDto)
+
+	req, _ := http.NewRequest("PUT", fmt.Sprintf("/%s", userID), bytes.NewBuffer([]byte(payload.Content)))
 	req.Header.Set("Content-Type", "application/json")
 
 	ctx.responseRecorder = httptest.NewRecorder()
@@ -46,7 +48,12 @@ func (ctx *UserFeatureContext) iShouldGetStatusCode(expectedCode int) error {
 }
 
 func (ctx *UserFeatureContext) theResponseShouldBe(expectedResponse string) error {
-	body := ctx.responseRecorder.Body.String()
+	body := strings.TrimSpace(ctx.responseRecorder.Body.String())
+	expectedResponse = strings.TrimSpace(expectedResponse)
+
+	body = strings.ReplaceAll(body, "\n", "")
+	expectedResponse = strings.ReplaceAll(expectedResponse, "\n", "")
+
 	if body != expectedResponse {
 		return fmt.Errorf("expected response %s but got %s", expectedResponse, body)
 	}
@@ -55,11 +62,17 @@ func (ctx *UserFeatureContext) theResponseShouldBe(expectedResponse string) erro
 }
 
 // Helper functions
-func (ctx *UserFeatureContext) setupMocksForUserCreation(userDto user.CreateUserDTO) {
-	if userDto.Name == "" || userDto.Email == "john.doeexample.com" {
-		ctx.userRepository.On("GetByEmail", userDto.Email).Return(nil, nil)
+func (ctx *UserFeatureContext) setupMocksForUserUpdate(userDto user.UpdateUserDTO) {
+	if userDto.ID == "999" {
+		ctx.userRepository.On("GetByID", userDto.ID).Return(&userentity.User[string]{}, fmt.Errorf("User not found"))
 	} else {
-		ctx.userRepository.On("GetByEmail", userDto.Email).Return(&userentity.User[string]{}, nil)
-		ctx.userRepository.On("Create", mock.Anything).Return(nil)
+		updatedUser := userentity.NewUser[string](
+			userentity.WithID[string](userDto.ID),
+			userentity.WithName(userDto.Name),
+			userentity.WithEmail(userDto.Email),
+			userentity.WithDob[string](userDto.Dob.Time),
+		)
+		ctx.userRepository.On("GetByID", userDto.ID).Return(updatedUser, nil)
+		ctx.userRepository.On("Update", updatedUser).Return(nil)
 	}
 }

@@ -1,4 +1,4 @@
-package get_user_by_id
+package delete_user_by_id
 
 import (
 	"os"
@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 		Options: &godog.Options{
 			Format:              "pretty",
 			Output:              colors.Colored(os.Stdout),
-			Paths:               []string{"get_user_by_id.feature"},
+			Paths:               []string{"delete_user_by_id.feature"},
 			Randomize:           0,
 			ShowStepDefinitions: false,
 			NoColors:            false,

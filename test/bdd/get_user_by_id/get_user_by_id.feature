@@ -2,7 +2,7 @@
 Feature: User management
   As a user
   I want to manage users
-  So that I can get user by id
+  So that I can get user by ID
 
   @get-user-by-id
   Scenario Outline: Getting a user by ID

@@ -1,4 +1,4 @@
-package get_user_by_id
+package get_all_users
 
 import (
 	"os"
@@ -20,8 +20,8 @@ func TestMain(m *testing.M) {
 		Options: &godog.Options{
 			Format:              "pretty",
 			Output:              colors.Colored(os.Stdout),
-			Paths:               []string{"get_user_by_id.feature"},
-			Randomize:           -1,
+			Paths:               []string{"get_all_users.feature"},
+			Randomize:           0,
 			ShowStepDefinitions: false,
 			NoColors:            false,
 		},

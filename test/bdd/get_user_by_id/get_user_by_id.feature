@@ -1,22 +1,21 @@
-Feature: Get User by ID
+@user-management
+Feature: User management
   As a user
-  I want to get a user by their ID
-  So that I can view user details
+  I want to manage users
+  So that I can get user by ID
 
-  Scenario Template: Getting user by ID
-    Given A repository with user not found with "<id>"
-    When I get a user by ID "<id>"
+  @get-user-by-id
+  Scenario Outline: Getting a user by ID
+    When I request the user with ID "<user_id>"
     Then I should get status code <status_code>
-    And the response should be "<response>"
+    And the response should be:
+    """
+    <response>
+    """
 
     Examples:
-      | id                                 | status_code | response                                           |
-      | e17d5135-989e-4977-99ef-495c0ab7cd00                    | 500         | user not found\n |
+      | user_id | status_code | response                                                    |
+      | 1       | 200         | {"id":"1","name":"Jane Doe","email":"jane.doe@example.com"}\n |
+      | 999     | 404         | User not found\n                                            |
 
-  Scenario Template:
-    Given A repository with user found with "<id>"
-    When I get a user by ID "<id>"
-    Then I should get status code <status_code>
-    Examples:
-      | id | status_code |
-      |e17d5135-989e-4977-99ef-495c0ab7cd01 | 200   |
+

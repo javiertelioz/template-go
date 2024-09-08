@@ -13,10 +13,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/javiertelioz/template-clean-architecture-go/internal/application/use_cases"
-	"github.com/javiertelioz/template-clean-architecture-go/internal/infrastructure/repositories"
-	"github.com/javiertelioz/template-clean-architecture-go/internal/presentation/controllers"
-	"github.com/javiertelioz/template-clean-architecture-go/internal/presentation/routes"
+	"github.com/javiertelioz/template-clean-architecture-go/src/application/use_cases"
+	"github.com/javiertelioz/template-clean-architecture-go/src/infrastructure/repositories"
+	"github.com/javiertelioz/template-clean-architecture-go/src/interfaces/controllers"
+	"github.com/javiertelioz/template-clean-architecture-go/src/interfaces/routes"
 )
 
 func Run() {

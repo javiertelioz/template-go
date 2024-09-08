@@ -3,7 +3,7 @@ package repository
 import (
 	"github.com/stretchr/testify/mock"
 
-	userentity "github.com/javiertelioz/template-clean-architecture-go/internal/domain/entities/user"
+	userentity "github.com/javiertelioz/template-clean-architecture-go/src/domain/entities/user"
 )
 
 // MockUserRepository is a mock implementation of the UserRepository interface

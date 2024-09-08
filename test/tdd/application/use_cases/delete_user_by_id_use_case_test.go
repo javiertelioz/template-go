@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/javiertelioz/template-clean-architecture-go/internal/application/use_cases"
-	userentity "github.com/javiertelioz/template-clean-architecture-go/internal/domain/entities/user"
+	"github.com/javiertelioz/template-clean-architecture-go/src/application/use_cases"
+	userentity "github.com/javiertelioz/template-clean-architecture-go/src/domain/entities/user"
 	"github.com/javiertelioz/template-clean-architecture-go/test/mocks/repository"
 )
 

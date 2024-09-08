@@ -1,10 +1,11 @@
-package get_user_by_id
+package update_user_by_id
 
 import (
 	"net/http/httptest"
 
 	"github.com/cucumber/godog"
 	"github.com/go-chi/chi/v5"
+
 	"github.com/javiertelioz/template-clean-architecture-go/src/application/use_cases"
 	"github.com/javiertelioz/template-clean-architecture-go/src/interfaces/controllers"
 	"github.com/javiertelioz/template-clean-architecture-go/src/interfaces/routes"
@@ -20,18 +21,14 @@ type UserFeatureContext struct {
 func NewUserFeatureContext() *UserFeatureContext {
 	userRepository := new(repository.MockUserRepository)
 
-	createUserUseCase := use_cases.NewCreateUserUseCase(userRepository)
-	getUsersUseCase := use_cases.NewGetUsesUseCase(userRepository)
-	getUserByIDUseCase := use_cases.NewGetUserByIDUseCase(userRepository)
 	updateUserByIDUseCase := use_cases.NewUpdateUserByIDUseCase(userRepository)
-	deleteUserByIDUseCase := use_cases.NewDeleteUserByIDUseCase(userRepository)
 
 	controller := controllers.NewUserController(
-		*createUserUseCase,
-		*getUsersUseCase,
-		*getUserByIDUseCase,
+		use_cases.CreateUserUseCase{},
+		use_cases.GetUsesUseCase{},
+		use_cases.GetUserByIDUseCase{},
 		*updateUserByIDUseCase,
-		*deleteUserByIDUseCase,
+		use_cases.DeleteUserByIDUseCase{},
 	)
 
 	router := routes.UserRoutes(controller)
@@ -44,7 +41,7 @@ func NewUserFeatureContext() *UserFeatureContext {
 }
 
 func (ctx *UserFeatureContext) InitializeScenario(s *godog.ScenarioContext) {
-	s.Step(`^I request the user with ID "([^"]*)"$`, ctx.iRequestTheUserWithID)
+	s.Step(`^I update the user with ID "([^"]*)" with payload:$`, ctx.iUpdateTheUserWithID)
 	s.Step(`^I should get status code (\d+)$`, ctx.iShouldGetStatusCode)
-	s.Step(`^the response should be:$`, ctx.theResponseShouldBe)
+	s.Step(`^the response should be "([^"]*)"$`, ctx.theResponseShouldBe)
 }
